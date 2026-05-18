@@ -1,0 +1,13 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type HealthCheck {
+  status: String!
+  timestamp: String!
+  uptime: Float!
+}
+
+type Query {
+  health: HealthCheck!
+}
