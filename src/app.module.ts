@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -8,7 +9,12 @@ import { join } from 'path';
 
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
+import { UnifiedResponseInterceptor } from '@/common/interceptors/unified-response.interceptor';
+
 import { HealthModule } from '@/health/health.module';
+import { UsersModule } from '@/users/users.module';
+import { AuthModule } from '@/auth/auth.module';
+
 
 @Module({
   imports: [
@@ -39,10 +45,19 @@ import { HealthModule } from '@/health/health.module';
       introspection: true,
       csrfPrevention: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      context: ({ req, res }) => ({ req, res }),
     }),
+    AuthModule,
+    UsersModule,
     HealthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: UnifiedResponseInterceptor,
+    },
+  ],
 })
 export class AppModule {}

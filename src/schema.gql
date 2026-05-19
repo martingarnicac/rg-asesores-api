@@ -2,12 +2,249 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type HealthCheck {
+type AuthMessageResponse {
+  code: ResponseCode!
+  data: String
+  message: String!
+  status: Float!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type AuthResponse {
+  code: ResponseCode!
+  data: AuthPayload
+  message: String!
+  status: Float!
+}
+
+type AuthToken {
+  createdAt: DateTime!
+  expiresAt: DateTime!
+  id: ID!
+  revokedAt: DateTime
+  type: TokenType!
+  user: User!
+}
+
+enum Availability {
+  ACTIVE
+  ARCHIVED
+  DELETED
+  DRAFT
+  INACTIVE
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
+input ConfirmEmailChangeInput {
+  token: String!
+}
+
+input CreateUserInput {
+  email: String!
+  lastname: String
+  name: String!
+  password: String!
+  role: UserRole
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type DeleteResponse {
+  code: ResponseCode!
+  data: String
+  message: String!
+  status: Float!
+}
+
+type HealthData {
   status: String!
   timestamp: String!
   uptime: Float!
 }
 
+type HealthResponse {
+  code: ResponseCode!
+  data: HealthData
+  message: String!
+  status: Float!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  changePassword(input: ChangePasswordInput!): AuthMessageResponse!
+  changeUserAvailability(availability: Availability!, id: String!): UserResponse!
+  confirmEmailChange(input: ConfirmEmailChangeInput!): UserResponse!
+  confirmPasswordChange(input: ResetPasswordInput!): UserResponse!
+  createUser(input: CreateUserInput!): UserResponse!
+  deleteUser(id: String!): DeleteResponse!
+  login(input: LoginInput!): AuthResponse!
+  logout: AuthMessageResponse!
+  requestEmailChange(input: RequestEmailChangeInput!): AuthMessageResponse!
+  requestPasswordChange(email: String!): AuthMessageResponse!
+  resendEmailChange: AuthMessageResponse!
+  seedAdmin(input: SeedAdminInput!): UserResponse!
+  updateUser(id: String!, input: UpdateUserInput!): UserResponse!
+  verifyEmail(input: VerifyEmailInput!): UserResponse!
+}
+
+type PaginatedMeta {
+  itemsPerPage: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+input PaginationInput {
+  itemsPerPage: Float! = 10
+  page: Float! = 1
+}
+
 type Query {
-  health: HealthCheck!
+  health: HealthResponse!
+  me: AuthResponse!
+  sessions(userId: String): [AuthToken!]!
+  user(id: String!): UserResponse!
+  users(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): UsersPaginatedResponse!
+}
+
+input RequestEmailChangeInput {
+  newEmail: String!
+}
+
+input ResetPasswordInput {
+  newPassword: String!
+  token: String!
+}
+
+enum ResponseCode {
+  ACCEPTED
+  ACCOUNT_INACTIVE
+  BAD_REQUEST
+  CONFLICT
+  CREATED
+  EMAIL_ALREADY_EXISTS
+  EMAIL_CHANGED
+  EMAIL_SENT
+  FORBIDDEN
+  INTERNAL_SERVER_ERROR
+  INVALID_CREDENTIALS
+  NOT_FOUND
+  NO_CONTENT
+  OPERATION_COMPLETED
+  PASSWORD_CHANGED
+  PASSWORD_INCORRECT
+  PASSWORD_RESET
+  PASSWORD_TOO_WEAK
+  SERVICE_UNAVAILABLE
+  SUCCESS
+  TOKEN_EXPIRED
+  TOKEN_INVALID
+  TOO_MANY_REQUESTS
+  UNAUTHORIZED
+  UNPROCESSABLE_ENTITY
+}
+
+input SeedAdminInput {
+  email: String!
+  lastname: String
+  name: String!
+  password: String!
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+enum TokenType {
+  EMAIL_CHANGE
+  EMAIL_VERIFICATION
+  PASSWORD_CHANGE
+  PASSWORD_RESET
+  SESSION
+}
+
+input UpdateUserInput {
+  lastname: String
+  name: String
+  role: UserRole
+}
+
+type User {
+  availability: Availability!
+  createdAt: DateTime!
+  email: String!
+  emailVerified: Boolean!
+  id: ID!
+  identifier: String!
+  lastSession: AuthToken
+  lastname: String
+  name: String!
+  role: UserRole!
+  updatedAt: DateTime!
+}
+
+input UserFilterInput {
+  availability: [Availability!]
+
+  """Filter by createdAt from date, example: YYYY-MM-DD"""
+  createdAtFrom: String
+
+  """Filter by createdAt to date, example: YYYY-MM-DD"""
+  createdAtTo: String
+  role: [UserRole!]
+  searchTerm: String
+}
+
+type UserResponse {
+  code: ResponseCode!
+  data: User
+  message: String!
+  status: Float!
+}
+
+enum UserRole {
+  ADMIN
+  EJECUTIVO
+  OPERADOR
+  VIEWER
+}
+
+input UserSortInput {
+  availability: SortDirection
+  createdAt: SortDirection
+  email: SortDirection
+  name: SortDirection
+  role: SortDirection
+}
+
+type UsersPaginatedData {
+  items: [User!]!
+  meta: PaginatedMeta!
+}
+
+type UsersPaginatedResponse {
+  code: ResponseCode!
+  data: UsersPaginatedData!
+  message: String!
+  status: Float!
+}
+
+input VerifyEmailInput {
+  token: String!
 }
