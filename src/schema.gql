@@ -220,8 +220,8 @@ type UserResponse {
 
 enum UserRole {
   ADMIN
-  EJECUTIVO
-  OPERADOR
+  EXECUTIVE
+  OPERATOR
   VIEWER
 }
 

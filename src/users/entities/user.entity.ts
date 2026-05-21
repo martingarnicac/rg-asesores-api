@@ -6,8 +6,8 @@ import { AuthToken } from '@/auth/entities';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
-  EJECUTIVO = 'EJECUTIVO',
-  OPERADOR = 'OPERADOR',
+  EXECUTIVE = 'EXECUTIVE',
+  OPERATOR = 'OPERATOR',
   VIEWER = 'VIEWER',
 }
 
@@ -43,7 +43,7 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.EJECUTIVO,
+    default: UserRole.EXECUTIVE,
     nullable: false,
   })
   role: UserRole;
