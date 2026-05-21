@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: rg-contracts-postgres
+    container_name: rg-asesores-api-postgres
     restart: always
     ports:
       - "${DB_PORT:-5433}:5432"
@@ -23,7 +23,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: rg-contracts-api
+    container_name: rg-asesores-api
     restart: always
     ports:
       - "${PORT:-3000}:3000"
