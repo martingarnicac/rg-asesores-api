@@ -55,6 +55,32 @@ input CreateUserInput {
   role: UserRole
 }
 
+input CreateVariableColorInput {
+  hex: String!
+  name: String!
+}
+
+input CreateVariableIconInput {
+  iconKey: String!
+  library: String!
+  name: String!
+}
+
+input CreateVariableInput {
+  colorId: String!
+  dataFormat: VariableDataFormat
+  dataType: VariableDataType!
+  defaultPartyRole: PartyRole
+  defaultValue: JSON
+  description: String
+  iconId: String!
+  isArray: Boolean
+  label: String!
+  placeholder: String
+  typeOptions: JSON
+  valueScope: VariableValueScope
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -80,6 +106,11 @@ type HealthResponse {
   status: Float!
 }
 
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 input LoginInput {
   email: String!
   password: String!
@@ -88,10 +119,19 @@ input LoginInput {
 type Mutation {
   changePassword(input: ChangePasswordInput!): AuthMessageResponse!
   changeUserAvailability(availability: Availability!, id: String!): UserResponse!
+  changeVariableAvailability(availability: Availability!, id: String!): VariableResponse!
+  changeVariableColorAvailability(availability: Availability!, id: String!): VariableColorResponse!
+  changeVariableIconAvailability(availability: Availability!, id: String!): VariableIconResponse!
   confirmEmailChange(input: ConfirmEmailChangeInput!): UserResponse!
   confirmPasswordChange(input: ResetPasswordInput!): UserResponse!
   createUser(input: CreateUserInput!): UserResponse!
+  createVariable(input: CreateVariableInput!): VariableResponse!
+  createVariableColor(input: CreateVariableColorInput!): VariableColorResponse!
+  createVariableIcon(input: CreateVariableIconInput!): VariableIconResponse!
   deleteUser(id: String!): DeleteResponse!
+  deleteVariable(id: String!): VariableResponse!
+  deleteVariableColor(id: String!): VariableColorResponse!
+  deleteVariableIcon(id: String!): VariableIconResponse!
   login(input: LoginInput!): AuthResponse!
   logout: AuthMessageResponse!
   requestEmailChange(input: RequestEmailChangeInput!): AuthMessageResponse!
@@ -99,6 +139,9 @@ type Mutation {
   resendEmailChange: AuthMessageResponse!
   seedAdmin(input: SeedAdminInput!): UserResponse!
   updateUser(id: String!, input: UpdateUserInput!): UserResponse!
+  updateVariable(id: String!, input: UpdateVariableInput!): VariableResponse!
+  updateVariableColor(id: String!, input: UpdateVariableColorInput!): VariableColorResponse!
+  updateVariableIcon(id: String!, input: UpdateVariableIconInput!): VariableIconResponse!
   verifyEmail(input: VerifyEmailInput!): UserResponse!
 }
 
@@ -114,12 +157,26 @@ input PaginationInput {
   page: Float! = 1
 }
 
+enum PartyRole {
+  GUARANTOR
+  JOINT_GUARANTOR
+  LEGAL_REPRESENTATIVE
+  LESSEE
+  LESSOR
+}
+
 type Query {
   health: HealthResponse!
   me: AuthResponse!
   sessions(userId: String): [AuthToken!]!
   user(id: String!): UserResponse!
   users(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): UsersPaginatedResponse!
+  variable(id: String!): VariableResponse!
+  variableColor(id: String!): VariableColorResponse!
+  variableColors(filter: VariableColorFilterInput, pagination: PaginationInput, sort: VariableColorSortInput): VariableColorsPaginatedResponse!
+  variableIcon(id: String!): VariableIconResponse!
+  variableIcons(filter: VariableIconFilterInput, pagination: PaginationInput, sort: VariableIconSortInput): VariableIconsPaginatedResponse!
+  variables(filter: VariableFilterInput, pagination: PaginationInput, sort: VariableSortInput): VariablesPaginatedResponse!
 }
 
 input RequestEmailChangeInput {
@@ -185,6 +242,32 @@ input UpdateUserInput {
   role: UserRole
 }
 
+input UpdateVariableColorInput {
+  hex: String
+  name: String
+}
+
+input UpdateVariableIconInput {
+  iconKey: String
+  library: String
+  name: String
+}
+
+input UpdateVariableInput {
+  colorId: String
+  dataFormat: VariableDataFormat
+  dataType: VariableDataType
+  defaultPartyRole: PartyRole
+  defaultValue: JSON
+  description: String
+  iconId: String
+  isArray: Boolean
+  label: String
+  placeholder: String
+  typeOptions: JSON
+  valueScope: VariableValueScope
+}
+
 type User {
   availability: Availability!
   createdAt: DateTime!
@@ -241,6 +324,178 @@ type UsersPaginatedData {
 type UsersPaginatedResponse {
   code: ResponseCode!
   data: UsersPaginatedData!
+  message: String!
+  status: Float!
+}
+
+type Variable {
+  availability: Availability!
+  color: VariableColor!
+  createdAt: DateTime!
+  dataFormat: VariableDataFormat
+  dataType: VariableDataType!
+  defaultPartyRole: PartyRole
+  defaultValue: JSON
+  description: String
+  icon: VariableIcon!
+  id: ID!
+  identifier: String!
+  isArray: Boolean!
+  key: String!
+  label: String!
+  placeholder: String
+  typeOptions: JSON
+  updatedAt: DateTime!
+  valueScope: VariableValueScope!
+}
+
+type VariableColor {
+  availability: Availability!
+  createdAt: DateTime!
+  hex: String!
+  id: ID!
+  identifier: String!
+  name: String!
+  updatedAt: DateTime!
+}
+
+input VariableColorFilterInput {
+  availability: [Availability!]
+
+  """Filter by createdAt from date, example: YYYY-MM-DD"""
+  createdAtFrom: String
+
+  """Filter by createdAt to date, example: YYYY-MM-DD"""
+  createdAtTo: String
+  searchTerm: String
+}
+
+type VariableColorResponse {
+  code: ResponseCode!
+  data: VariableColor
+  message: String!
+  status: Float!
+}
+
+input VariableColorSortInput {
+  createdAt: String
+  name: String
+}
+
+type VariableColorsPaginatedData {
+  items: [VariableColor!]!
+  meta: PaginatedMeta!
+}
+
+type VariableColorsPaginatedResponse {
+  code: ResponseCode!
+  data: VariableColorsPaginatedData!
+  message: String!
+  status: Float!
+}
+
+enum VariableDataFormat {
+  BOOLEAN
+  CHIPS
+  CURRENCY
+  DATE
+  DATETIME
+  EMAIL
+  NUMBER
+  PERCENT
+  PHONE
+  SELECT
+  TEXT
+}
+
+enum VariableDataType {
+  BOOLEAN
+  DATE
+  ENUM
+  NUMBER
+  TEXT
+}
+
+input VariableFilterInput {
+  availability: [Availability!]
+  createdAtFrom: String
+  createdAtTo: String
+  dataType: [VariableDataType!]
+  searchTerm: String
+}
+
+type VariableIcon {
+  availability: Availability!
+  createdAt: DateTime!
+  iconKey: String!
+  id: ID!
+  identifier: String!
+  library: String!
+  name: String!
+  updatedAt: DateTime!
+}
+
+input VariableIconFilterInput {
+  availability: [Availability!]
+
+  """Filter by createdAt from date, example: YYYY-MM-DD"""
+  createdAtFrom: String
+
+  """Filter by createdAt to date, example: YYYY-MM-DD"""
+  createdAtTo: String
+  searchTerm: String
+}
+
+type VariableIconResponse {
+  code: ResponseCode!
+  data: VariableIcon
+  message: String!
+  status: Float!
+}
+
+input VariableIconSortInput {
+  createdAt: String
+  name: String
+}
+
+type VariableIconsPaginatedData {
+  items: [VariableIcon!]!
+  meta: PaginatedMeta!
+}
+
+type VariableIconsPaginatedResponse {
+  code: ResponseCode!
+  data: VariableIconsPaginatedData!
+  message: String!
+  status: Float!
+}
+
+type VariableResponse {
+  code: ResponseCode!
+  data: Variable
+  message: String!
+  status: Float!
+}
+
+input VariableSortInput {
+  createdAt: String
+  dataType: String
+  name: String
+}
+
+enum VariableValueScope {
+  CONTRACT
+  PARTICIPANT
+}
+
+type VariablesPaginatedData {
+  items: [Variable!]!
+  meta: PaginatedMeta!
+}
+
+type VariablesPaginatedResponse {
+  code: ResponseCode!
+  data: VariablesPaginatedData!
   message: String!
   status: Float!
 }

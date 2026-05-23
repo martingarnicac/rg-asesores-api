@@ -14,6 +14,7 @@ import { UnifiedResponseInterceptor } from '@/common/interceptors/unified-respon
 import { HealthModule } from '@/health/health.module';
 import { UsersModule } from '@/users/users.module';
 import { AuthModule } from '@/auth/auth.module';
+import { VariablesModule } from '@/variables/variables.module';
 
 
 @Module({
@@ -49,6 +50,7 @@ import { AuthModule } from '@/auth/auth.module';
     }),
     AuthModule,
     UsersModule,
+    VariablesModule,
     HealthModule,
   ],
   controllers: [AppController],
