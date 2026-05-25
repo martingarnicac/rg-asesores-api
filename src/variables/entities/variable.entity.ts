@@ -55,7 +55,7 @@ export class Variable {
   defaultValue: any;
 
   @Field(() => VariableValueScope)
-  @Column({ type: 'enum', enum: VariableValueScope, default: VariableValueScope.CONTRACT, nullable: false, name: 'value_scope' })
+  @Column({ type: 'enum', enum: VariableValueScope, default: VariableValueScope.DOCUMENT, nullable: false, name: 'value_scope' })
   valueScope: VariableValueScope;
 
   @Field(() => PartyRole, { nullable: true })

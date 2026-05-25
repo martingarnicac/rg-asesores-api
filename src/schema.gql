@@ -163,6 +163,8 @@ enum PartyRole {
   LEGAL_REPRESENTATIVE
   LESSEE
   LESSOR
+  OTHER
+  WITNESS
 }
 
 type Query {
@@ -484,7 +486,7 @@ input VariableSortInput {
 }
 
 enum VariableValueScope {
-  CONTRACT
+  DOCUMENT
   PARTICIPANT
 }
 

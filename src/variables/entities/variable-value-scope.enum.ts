@@ -1,7 +1,7 @@
 import { registerEnumType } from '@nestjs/graphql';
 
 export enum VariableValueScope {
-  CONTRACT = 'CONTRACT',
+  DOCUMENT = 'DOCUMENT',
   PARTICIPANT = 'PARTICIPANT',
 }
 

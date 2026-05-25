@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere, FindOptionsOrder, In, ILike, Between, MoreThan, LessThan } from 'typeorm';
 
 import { Availability } from '@/common/availability/entities';
+import { PartyRole } from '@/common/enums/party-role.enum';
 import { AvailabilityFlowService } from '@/common/availability/availability-flow.service';
 import { PaginationService } from '@/common/pagination/pagination.service';
 import { IdentifierService } from '@/common/identifier/identifier.service';
@@ -104,6 +105,23 @@ export class VariablesService {
     return this.variableRepo.findOne({ where: { key }, relations: ['icon', 'color'] });
   }
 
+  private validateValueScopeAndPartyRole(valueScope: VariableValueScope, defaultPartyRole?: PartyRole | null): void {
+    if (valueScope === VariableValueScope.PARTICIPANT && !defaultPartyRole) {
+      throw new BadRequestException('defaultPartyRole is required when valueScope is PARTICIPANT');
+    }
+
+    if (valueScope === VariableValueScope.DOCUMENT && defaultPartyRole) {
+      throw new BadRequestException('defaultPartyRole must be null when valueScope is DOCUMENT');
+    }
+  }
+
+  private resolveDefaultPartyRole(
+    valueScope: VariableValueScope,
+    defaultPartyRole?: PartyRole | null,
+  ): PartyRole | null {
+    return valueScope === VariableValueScope.PARTICIPANT ? (defaultPartyRole ?? null) : null;
+  }
+
   async create(input: CreateVariableInput): Promise<Variable> {
     const key = this.generateKeyFromLabel(input.label);
 
@@ -123,17 +141,19 @@ export class VariablesService {
 
     this.variableTypeValidator.validateTypeAndFormat(input.dataType, dataFormat, isArray);
 
-    if (input.typeOptions) {
-      this.variableTypeValidator.validateTypeOptions(input.dataType, dataFormat, isArray, input.typeOptions);
-    }
+    const normalizedTypeOptions = this.variableTypeValidator.normalizeAndValidateTypeOptions(
+      input.dataType,
+      dataFormat,
+      isArray,
+      input.typeOptions,
+    );
 
     if (input.defaultValue !== undefined && input.defaultValue !== null) {
-      this.variableTypeValidator.validateDefaultValue(input.dataType, isArray, input.defaultValue, input.typeOptions);
+      this.variableTypeValidator.validateDefaultValue(input.dataType, isArray, input.defaultValue, normalizedTypeOptions);
     }
 
-    if (input.valueScope === VariableValueScope.PARTICIPANT && !input.defaultPartyRole) {
-      throw new BadRequestException('defaultPartyRole is required when valueScope is PARTICIPANT');
-    }
+    const valueScope = input.valueScope ?? VariableValueScope.DOCUMENT;
+    this.validateValueScopeAndPartyRole(valueScope, input.defaultPartyRole);
 
     const identifier = await this.identifierService.generateNextIdentifier<Variable>(this.variableRepo, 'VAR');
 
@@ -145,10 +165,10 @@ export class VariablesService {
       dataType: input.dataType,
       dataFormat: dataFormat,
       isArray,
-      typeOptions: input.typeOptions ?? {},
+      typeOptions: normalizedTypeOptions,
       defaultValue: input.defaultValue ?? null,
-      valueScope: input.valueScope ?? VariableValueScope.CONTRACT,
-      defaultPartyRole: input.defaultPartyRole ?? null,
+      valueScope,
+      defaultPartyRole: this.resolveDefaultPartyRole(valueScope, input.defaultPartyRole),
       placeholder: input.placeholder ?? null,
       iconId: input.iconId,
       colorId: input.colorId,
@@ -189,29 +209,39 @@ export class VariablesService {
 
     this.variableTypeValidator.validateTypeAndFormat(effectiveDataType, effectiveDataFormat, effectiveIsArray);
 
+    let normalizedTypeOptions = effectiveTypeOptions;
     if (input.typeOptions !== undefined) {
-      this.variableTypeValidator.validateTypeOptions(effectiveDataType, effectiveDataFormat, effectiveIsArray, effectiveTypeOptions);
+      normalizedTypeOptions = this.variableTypeValidator.normalizeAndValidateTypeOptions(
+        effectiveDataType,
+        effectiveDataFormat,
+        effectiveIsArray,
+        input.typeOptions,
+      );
     }
 
     if (input.defaultValue !== undefined) {
-      this.variableTypeValidator.validateDefaultValue(effectiveDataType, effectiveIsArray, effectiveDefaultValue, effectiveTypeOptions);
+      this.variableTypeValidator.validateDefaultValue(effectiveDataType, effectiveIsArray, effectiveDefaultValue, normalizedTypeOptions);
     }
 
     const effectiveValueScope = input.valueScope ?? variable.valueScope;
-    const effectivePartyRole = input.defaultPartyRole !== undefined ? input.defaultPartyRole : variable.defaultPartyRole;
-    if (effectiveValueScope === VariableValueScope.PARTICIPANT && !effectivePartyRole) {
-      throw new BadRequestException('defaultPartyRole is required when valueScope is PARTICIPANT');
-    }
+    const effectivePartyRole =
+      effectiveValueScope === VariableValueScope.DOCUMENT
+        ? (input.defaultPartyRole !== undefined ? (input.defaultPartyRole ?? null) : null)
+        : input.defaultPartyRole !== undefined
+          ? (input.defaultPartyRole ?? null)
+          : variable.defaultPartyRole;
+    this.validateValueScopeAndPartyRole(effectiveValueScope, effectivePartyRole);
+    const resolvedDefaultPartyRole = this.resolveDefaultPartyRole(effectiveValueScope, effectivePartyRole);
 
     if (input.label !== undefined) variable.label = input.label;
     if (input.description !== undefined) variable.description = input.description ?? null;
     if (input.dataType !== undefined) variable.dataType = input.dataType;
     if (input.dataFormat !== undefined) variable.dataFormat = input.dataFormat;
     if (input.isArray !== undefined) variable.isArray = input.isArray;
-    if (input.typeOptions !== undefined) variable.typeOptions = input.typeOptions;
+    if (input.typeOptions !== undefined) variable.typeOptions = normalizedTypeOptions;
     if (input.defaultValue !== undefined) variable.defaultValue = input.defaultValue ?? null;
     if (input.valueScope !== undefined) variable.valueScope = input.valueScope;
-    if (input.defaultPartyRole !== undefined) variable.defaultPartyRole = input.defaultPartyRole ?? null;
+    variable.defaultPartyRole = resolvedDefaultPartyRole;
     if (input.placeholder !== undefined) variable.placeholder = input.placeholder ?? null;
     if (input.iconId !== undefined) {
       variable.iconId = input.iconId;
