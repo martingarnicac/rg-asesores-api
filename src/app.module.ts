@@ -17,6 +17,7 @@ import { AuthModule } from '@/auth/auth.module';
 import { VariablesModule } from '@/variables/variables.module';
 import { ClausesModule } from '@/clauses/clauses.module';
 import { TagsModule } from '@/tags/tags.module';
+import { SignersModule } from '@/signers/signers.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { TagsModule } from '@/tags/tags.module';
     VariablesModule,
     ClausesModule,
     TagsModule,
+    SignersModule,
     HealthModule,
   ],
   controllers: [AppController],

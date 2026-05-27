@@ -165,6 +165,13 @@ input CreateClauseInput {
   variables: [ClauseVariableSyncInput!]
 }
 
+input CreateSignerInput {
+  email: String!
+  lastname: String!
+  name: String!
+  phone: String
+}
+
 input CreateTagInput {
   name: String!
 }
@@ -243,6 +250,7 @@ type Mutation {
   assignTagToClause(input: AssignTagToClauseInput!): TagResponse!
   changeClauseAvailability(availability: Availability!, id: String!): ClauseResponse!
   changePassword(input: ChangePasswordInput!): AuthMessageResponse!
+  changeSignerAvailability(availability: Availability!, id: String!): SignerResponse!
   changeTagAvailability(availability: Availability!, id: String!): TagResponse!
   changeUserAvailability(availability: Availability!, id: String!): UserResponse!
   changeVariableAvailability(availability: Availability!, id: String!): VariableResponse!
@@ -251,12 +259,14 @@ type Mutation {
   confirmEmailChange(input: ConfirmEmailChangeInput!): UserResponse!
   confirmPasswordChange(input: ResetPasswordInput!): UserResponse!
   createClause(input: CreateClauseInput!, replacesClauseId: String): ClauseResponse!
+  createSigner(input: CreateSignerInput!): SignerResponse!
   createTag(input: CreateTagInput!): TagResponse!
   createUser(input: CreateUserInput!): UserResponse!
   createVariable(input: CreateVariableInput!): VariableResponse!
   createVariableColor(input: CreateVariableColorInput!): VariableColorResponse!
   createVariableIcon(input: CreateVariableIconInput!): VariableIconResponse!
   deleteClause(id: String!): ClauseResponse!
+  deleteSigner(id: String!): SignerResponse!
   deleteTag(id: String!): TagResponse!
   deleteUser(id: String!): DeleteResponse!
   deleteVariable(id: String!): VariableResponse!
@@ -270,6 +280,7 @@ type Mutation {
   resendEmailChange: AuthMessageResponse!
   seedAdmin(input: SeedAdminInput!): UserResponse!
   updateClause(id: String!, input: UpdateClauseInput!): ClauseResponse!
+  updateSigner(id: String!, input: UpdateSignerInput!): SignerResponse!
   updateTag(id: String!, input: UpdateTagInput!): TagResponse!
   updateUser(id: String!, input: UpdateUserInput!): UserResponse!
   updateVariable(id: String!, input: UpdateVariableInput!): VariableResponse!
@@ -304,8 +315,11 @@ type Query {
   clause(id: String!): ClauseResponse!
   clauses(filter: ClauseFilterInput, pagination: PaginationInput, sort: ClauseSortInput): ClausesPaginatedResponse!
   health: HealthResponse!
+  lookupSigner(input: SignerLookupInput!): SignerResponse!
   me: AuthResponse!
   sessions(userId: String): [AuthToken!]!
+  signer(id: String!): SignerResponse!
+  signers(filter: SignerFilterInput, pagination: PaginationInput, sort: SignerSortInput): SignersPaginatedResponse!
   tag(id: String!): TagResponse!
   tags(filter: TagFilterInput, pagination: PaginationInput, sort: TagSortInput): TagsPaginatedResponse!
   tagsByClause(clauseId: String!): TagsByClauseResponse!
@@ -366,6 +380,61 @@ input SeedAdminInput {
   lastname: String
   name: String!
   password: String!
+}
+
+type Signer {
+  availability: Availability!
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  identifier: String!
+  isDeletable: Boolean!
+  lastname: String!
+  name: String!
+  phone: String
+  updatedAt: DateTime!
+}
+
+input SignerFilterInput {
+  availability: [Availability!]
+
+  """Filter by createdAt from date, example: YYYY-MM-DD"""
+  createdAtFrom: String
+
+  """Filter by createdAt to date, example: YYYY-MM-DD"""
+  createdAtTo: String
+  searchTerm: String
+}
+
+input SignerLookupInput {
+  email: String
+  phone: String
+}
+
+type SignerResponse {
+  code: ResponseCode!
+  data: Signer
+  message: String!
+  status: Float!
+}
+
+input SignerSortInput {
+  availability: SortDirection
+  createdAt: SortDirection
+  lastname: SortDirection
+  name: SortDirection
+}
+
+type SignersPaginatedData {
+  items: [Signer!]!
+  meta: PaginatedMeta!
+}
+
+type SignersPaginatedResponse {
+  code: ResponseCode!
+  data: SignersPaginatedData!
+  message: String!
+  status: Float!
 }
 
 enum SortDirection {
@@ -437,6 +506,13 @@ input UpdateClauseInput {
   code: String
   title: String
   variables: [ClauseVariableSyncInput!]
+}
+
+input UpdateSignerInput {
+  email: String
+  lastname: String
+  name: String
+  phone: String
 }
 
 input UpdateTagInput {

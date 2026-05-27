@@ -5,4 +5,5 @@ export enum DeletableEntityType {
   VARIABLE_ICON = 'VARIABLE_ICON',
   VARIABLE_COLOR = 'VARIABLE_COLOR',
   USER = 'USER',
+  SIGNER = 'SIGNER',
 }

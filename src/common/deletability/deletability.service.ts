@@ -22,6 +22,8 @@ const NOT_DELETABLE_MESSAGES: Record<DeletableEntityType, string> = {
     'Color cannot be deleted because it is used by one or more variables',
   [DeletableEntityType.USER]:
     'User cannot be deleted because it is referenced by other records',
+  [DeletableEntityType.SIGNER]:
+    'Signer cannot be deleted because it is referenced by other records',
 };
 
 @Injectable()
@@ -71,6 +73,9 @@ export class DeletabilityService {
 
       case DeletableEntityType.USER:
         return this.clauseRepo.count({ where: { createdBy: id } });
+
+      case DeletableEntityType.SIGNER:
+        return 0;
 
       default:
         return 0;
