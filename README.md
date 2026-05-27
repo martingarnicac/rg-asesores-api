@@ -379,6 +379,7 @@ DB_PASSWORD=rgpassword
 DB_NAME=rg_contracts
 DB_SYNCHRONIZE=true    # true solo en desarrollo; usar migraciones en producción
 DB_LOGGING=true
+DB_SSL=true
 
 # JWT
 JWT_SECRET=cambiar-en-produccion

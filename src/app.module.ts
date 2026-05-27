@@ -37,6 +37,7 @@ import { SignersModule } from '@/signers/signers.module';
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
         synchronize: configService.get<boolean>('DB_SYNCHRONIZE', true),
         logging: configService.get<boolean>('DB_LOGGING', true),
+        ssl: configService.get<boolean>('DB_SSL', false),
       }),
       inject: [ConfigService],
     }),
