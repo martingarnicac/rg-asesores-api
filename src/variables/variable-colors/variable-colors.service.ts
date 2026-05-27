@@ -6,6 +6,8 @@ import { Availability } from '@/common/availability/entities';
 import { AvailabilityFlowService } from '@/common/availability/availability-flow.service';
 import { PaginationService } from '@/common/pagination/pagination.service';
 import { IdentifierService } from '@/common/identifier/identifier.service';
+import { DeletableEntityType } from '@/common/deletability/entities';
+import { DeletabilityService } from '@/common/deletability/deletability.service';
 
 import { VariableColor } from '@/variables/variable-colors/entities';
 import { Variable } from '@/variables/entities';
@@ -21,6 +23,7 @@ export class VariableColorsService {
     private readonly paginationService: PaginationService,
     private readonly availabilityFlowService: AvailabilityFlowService,
     private readonly identifierService: IdentifierService,
+    private readonly deletabilityService: DeletabilityService,
   ) {}
 
   async findAll(
@@ -117,10 +120,7 @@ export class VariableColorsService {
       throw new BadRequestException('Color must be in DELETED availability state');
     }
 
-    const inUse = await this.variableRepo.count({ where: { colorId: id } });
-    if (inUse > 0) {
-      throw new ConflictException('Cannot delete color because it is used by variables');
-    }
+    await this.deletabilityService.assertDeletable(DeletableEntityType.VARIABLE_COLOR, id);
 
     await this.colorRepo.remove(color);
     return { message: 'Color permanently deleted' };

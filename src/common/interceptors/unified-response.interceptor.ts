@@ -1,6 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException } from '@nestjs/common';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { QueryFailedError } from 'typeorm';
 
 import { ResponseBuilder } from '@/common/response/response.builder';
 import { ResponseCode } from '@/common/response/response-code.enum';
@@ -10,6 +11,18 @@ export class UnifiedResponseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       catchError((error) => {
+        if (error instanceof QueryFailedError) {
+          const driverCode = (error as QueryFailedError & { driverError?: { code?: string } })
+            .driverError?.code;
+          if (driverCode === '23503') {
+            return of(
+              ResponseBuilder.conflict(
+                'Resource cannot be deleted because it is referenced by other records',
+              ),
+            );
+          }
+        }
+
         if (error instanceof HttpException) {
           const status = error.getStatus();
           const response = error.getResponse();

@@ -1,11 +1,12 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
 import { Availability } from '@/common/availability/entities';
+import { ClauseTag } from './clause-tag.entity';
 
 @ObjectType()
-@Entity('variable_colors')
-export class VariableColor {
+@Entity('tags')
+export class Tag {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -15,12 +16,12 @@ export class VariableColor {
   identifier: string;
 
   @Field()
-  @Column({ type: 'varchar', length: 100, nullable: false })
+  @Column({ type: 'varchar', length: 80, unique: true, nullable: false })
   name: string;
 
   @Field()
-  @Column({ type: 'varchar', length: 7, nullable: false })
-  hex: string;
+  @Column({ type: 'varchar', length: 80, unique: true, nullable: false })
+  slug: string;
 
   @Field(() => Boolean)
   isDeletable: boolean;
@@ -36,4 +37,8 @@ export class VariableColor {
   @Field()
   @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
+
+  @Field(() => [ClauseTag])
+  @OneToMany(() => ClauseTag, (clauseTag) => clauseTag.tag)
+  clauseTags: ClauseTag[];
 }

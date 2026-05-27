@@ -7,6 +7,8 @@ import { AvailabilityFlowService } from '@/common/availability/availability-flow
 import { PaginationService } from '@/common/pagination/pagination.service';
 import { FilterSortService } from '@/common/filter-sort/filter-sort.service';
 import { IdentifierService } from '@/common/identifier/identifier.service';
+import { DeletableEntityType } from '@/common/deletability/entities';
+import { DeletabilityService } from '@/common/deletability/deletability.service';
 import { AuthService } from '@/auth/auth.service';
 
 import { Availability, AvailabilityAction } from '@/common/availability/entities';
@@ -25,6 +27,7 @@ export class UsersService {
     private readonly filterSortService: FilterSortService,
     private readonly identifierService: IdentifierService,
     private readonly authService: AuthService,
+    private readonly deletabilityService: DeletabilityService,
   ) {}
 
   async findAll(
@@ -144,6 +147,8 @@ export class UsersService {
     if (user.availability !== Availability.DELETED) {
       throw new BadRequestException('User must be in DELETED availability state');
     }
+
+    await this.deletabilityService.assertDeletable(DeletableEntityType.USER, id);
 
     await this.userRepo.remove(user);
     return { message: 'User permanently deleted' };

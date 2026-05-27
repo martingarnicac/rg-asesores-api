@@ -7,6 +7,8 @@ import { PartyRole } from '@/common/enums/party-role.enum';
 import { AvailabilityFlowService } from '@/common/availability/availability-flow.service';
 import { PaginationService } from '@/common/pagination/pagination.service';
 import { IdentifierService } from '@/common/identifier/identifier.service';
+import { DeletableEntityType } from '@/common/deletability/entities';
+import { DeletabilityService } from '@/common/deletability/deletability.service';
 
 import { Variable, VariableDataType, VariableValueScope } from '@/variables/entities';
 import { VariableIcon } from '@/variables/variable-icons/entities';
@@ -27,14 +29,23 @@ export class VariablesService {
     private readonly availabilityFlowService: AvailabilityFlowService,
     private readonly identifierService: IdentifierService,
     private readonly variableTypeValidator: VariableTypeValidator,
+    private readonly deletabilityService: DeletabilityService,
   ) {}
 
-  private generateKeyFromLabel(label: string): string {
-    return label
+  private normalizeKey(value: string): string {
+    return value
       .toLowerCase()
       .trim()
       .replace(/\s+/g, '_')
       .replace(/[^a-z0-9_]/g, '');
+  }
+
+  private resolveKeyOrThrow(value: string): string {
+    const normalizedKey = this.normalizeKey(value);
+    if (!normalizedKey) {
+      throw new BadRequestException('Variable key must contain at least one alphanumeric character');
+    }
+    return normalizedKey;
   }
 
   async findAll(
@@ -123,7 +134,7 @@ export class VariablesService {
   }
 
   async create(input: CreateVariableInput): Promise<Variable> {
-    const key = this.generateKeyFromLabel(input.label);
+    const key = this.resolveKeyOrThrow(input.key ?? input.label);
 
     const existingKey = await this.variableRepo.findOne({ where: { key } });
     if (existingKey) {
@@ -182,8 +193,9 @@ export class VariablesService {
   async update(id: string, input: UpdateVariableInput): Promise<Variable> {
     const variable = await this.findOne(id);
 
-    if (input.label !== undefined && input.label !== variable.label) {
-      const newKey = this.generateKeyFromLabel(input.label);
+    const shouldRecalculateKey = input.key !== undefined || (input.label !== undefined && input.label !== variable.label);
+    if (shouldRecalculateKey) {
+      const newKey = this.resolveKeyOrThrow(input.key ?? input.label ?? variable.label);
       const existing = await this.variableRepo.findOne({ where: { key: newKey } });
       if (existing && existing.id !== id) {
         throw new ConflictException('Variable key already exists');
@@ -280,6 +292,8 @@ export class VariablesService {
     if (variable.availability !== Availability.DELETED) {
       throw new BadRequestException('Variable must be in DELETED availability state');
     }
+
+    await this.deletabilityService.assertDeletable(DeletableEntityType.VARIABLE, id);
 
     await this.variableRepo.remove(variable);
     return { message: 'Variable permanently deleted' };

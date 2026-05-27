@@ -82,6 +82,9 @@ export class Variable {
   @Column({ type: 'uuid', nullable: false, name: 'color_id' })
   colorId: string;
 
+  @Field(() => Boolean)
+  isDeletable: boolean;
+
   @Field(() => Availability)
   @Column({ type: 'enum', enum: Availability, default: Availability.ACTIVE, nullable: false })
   availability: Availability;

@@ -1,8 +1,10 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 
 import { Availability } from '@/common/availability/entities';
 import { ResponseBuilder } from '@/common/response';
+import { DeletableEntityType } from '@/common/deletability/entities';
+import { DeletabilityService } from '@/common/deletability/deletability.service';
 import { PaginationInput } from '@/common/pagination/dto';
 import { GqlAuthGuard, RolesGuard } from '@/auth/guards';
 import { Roles } from '@/auth/decorators';
@@ -18,10 +20,19 @@ import {
   VariableColorFilterInput,
   VariableColorSortInput,
 } from '@/variables/variable-colors/dto';
+import { VariableColor } from '@/variables/variable-colors/entities';
 
-@Resolver()
+@Resolver(() => VariableColor)
 export class VariableColorsResolver {
-  constructor(private readonly variableColorsService: VariableColorsService) {}
+  constructor(
+    private readonly variableColorsService: VariableColorsService,
+    private readonly deletabilityService: DeletabilityService,
+  ) {}
+
+  @ResolveField(() => Boolean)
+  async isDeletable(@Parent() color: VariableColor): Promise<boolean> {
+    return this.deletabilityService.isDeletable(DeletableEntityType.VARIABLE_COLOR, color.id);
+  }
 
   @Query(() => VariableColorsPaginatedResponse)
   @UseGuards(GqlAuthGuard)

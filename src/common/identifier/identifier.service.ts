@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ObjectLiteral } from 'typeorm';
 
 @Injectable()
@@ -23,8 +22,9 @@ export class IdentifierService {
     const lastRecord = await repo.findOne({
       where: whereClause,
       order: { [column]: 'DESC' } as any,
-      select: [column] as any,
-    });
+      select: ['id', column] as any,
+      loadEagerRelations: false,
+    } as any);
 
     let nextSequence = 1;
 
@@ -42,7 +42,8 @@ export class IdentifierService {
     const exists = await repo.findOne({
       where: { [column]: identifier, ...whereClause } as any,
       select: ['id'] as any,
-    });
+      loadEagerRelations: false,
+    } as any);
 
     if (exists) {
       this.logger.warn(`Identifier ${identifier} already exists, retrying with next sequence`);

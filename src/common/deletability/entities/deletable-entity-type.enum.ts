@@ -1,0 +1,8 @@
+export enum DeletableEntityType {
+  TAG = 'TAG',
+  CLAUSE = 'CLAUSE',
+  VARIABLE = 'VARIABLE',
+  VARIABLE_ICON = 'VARIABLE_ICON',
+  VARIABLE_COLOR = 'VARIABLE_COLOR',
+  USER = 'USER',
+}

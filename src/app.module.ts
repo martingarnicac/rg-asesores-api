@@ -15,7 +15,8 @@ import { HealthModule } from '@/health/health.module';
 import { UsersModule } from '@/users/users.module';
 import { AuthModule } from '@/auth/auth.module';
 import { VariablesModule } from '@/variables/variables.module';
-
+import { ClausesModule } from '@/clauses/clauses.module';
+import { TagsModule } from '@/tags/tags.module';
 
 @Module({
   imports: [
@@ -51,6 +52,8 @@ import { VariablesModule } from '@/variables/variables.module';
     AuthModule,
     UsersModule,
     VariablesModule,
+    ClausesModule,
+    TagsModule,
     HealthModule,
   ],
   controllers: [AppController],

@@ -52,6 +52,9 @@ export class User {
   @Column({ type: 'boolean', default: false, nullable: false, name: 'email_verified' })
   emailVerified: boolean;
 
+  @Field(() => Boolean)
+  isDeletable: boolean;
+
   @Field(() => Availability)
   @Column({ type: 'enum', enum: Availability, default: Availability.DRAFT, nullable: false })
   availability: Availability;

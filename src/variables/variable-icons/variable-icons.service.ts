@@ -6,6 +6,8 @@ import { Availability } from '@/common/availability/entities';
 import { AvailabilityFlowService } from '@/common/availability/availability-flow.service';
 import { PaginationService } from '@/common/pagination/pagination.service';
 import { IdentifierService } from '@/common/identifier/identifier.service';
+import { DeletableEntityType } from '@/common/deletability/entities';
+import { DeletabilityService } from '@/common/deletability/deletability.service';
 
 import { VariableIcon } from '@/variables/variable-icons/entities';
 import { Variable } from '@/variables/entities';
@@ -21,6 +23,7 @@ export class VariableIconsService {
     private readonly paginationService: PaginationService,
     private readonly availabilityFlowService: AvailabilityFlowService,
     private readonly identifierService: IdentifierService,
+    private readonly deletabilityService: DeletabilityService,
   ) {}
 
   async findAll(
@@ -121,10 +124,7 @@ export class VariableIconsService {
       throw new BadRequestException('Icon must be in DELETED availability state');
     }
 
-    const inUse = await this.variableRepo.count({ where: { iconId: id } });
-    if (inUse > 0) {
-      throw new ConflictException('Cannot delete icon because it is used by variables');
-    }
+    await this.deletabilityService.assertDeletable(DeletableEntityType.VARIABLE_ICON, id);
 
     await this.iconRepo.remove(icon);
     return { message: 'Icon permanently deleted' };

@@ -2,6 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AssignTagToClauseInput {
+  clauseId: String!
+  tagId: String!
+}
+
 type AuthMessageResponse {
   code: ResponseCode!
   data: String
@@ -43,8 +48,125 @@ input ChangePasswordInput {
   newPassword: String!
 }
 
+type Clause {
+  availability: Availability!
+  bodyText: String!
+  category: ClauseCategory!
+  clauseTags: [ClauseTag!]!
+  clauseVariables: [ClauseVariable!]!
+  code: String
+  createdAt: DateTime!
+  createdBy: String!
+  creator: User!
+  id: ID!
+  identifier: String!
+  isDeletable: Boolean!
+  replacesClause: Clause
+  replacesClauseId: String
+  title: String!
+  updatedAt: DateTime!
+}
+
+enum ClauseCategory {
+  ASSIGNMENT
+  BACKGROUND
+  CONFIDENTIALITY
+  DATA_PROTECTION
+  DEFINITIONS
+  DISPUTE_RESOLUTION
+  EXCLUSIVITY
+  FORCE_MAJEURE
+  GENERAL_PROVISIONS
+  INDEMNIFICATION
+  INSURANCE
+  INTELLECTUAL_PROPERTY
+  LEGAL_COMPLIANCE
+  LIABILITY
+  NON_COMPETE
+  NOTICES
+  OBLIGATIONS
+  OTHER
+  PRICE_AND_PAYMENT
+  REPRESENTATIONS
+  SCHEDULES
+  SUBCONTRACTING
+  SUBJECT_MATTER
+  TERM
+  TERMINATION
+  WARRANTIES
+}
+
+input ClauseFilterInput {
+  availability: [Availability!]
+  category: [ClauseCategory!]
+  createdAtFrom: String
+  createdAtTo: String
+  searchTerm: String
+}
+
+type ClauseResponse {
+  code: ResponseCode!
+  data: Clause
+  message: String!
+  status: Float!
+}
+
+input ClauseSortInput {
+  category: String
+  createdAt: String
+  title: String
+}
+
+type ClauseTag {
+  id: ID!
+  tag: Tag!
+}
+
+type ClauseVariable {
+  id: ID!
+  keyIfEmpty: String
+  keyRequired: Boolean!
+  partyRole: PartyRole
+  sortOrder: Float!
+  valueScope: VariableValueScope
+  variable: Variable!
+}
+
+input ClauseVariableSyncInput {
+  id: String
+  keyIfEmpty: String
+  keyRequired: Boolean
+  partyRole: PartyRole
+  valueScope: VariableValueScope
+  variableId: String!
+}
+
+type ClausesPaginatedData {
+  items: [Clause!]!
+  meta: PaginatedMeta!
+}
+
+type ClausesPaginatedResponse {
+  code: ResponseCode!
+  data: ClausesPaginatedData!
+  message: String!
+  status: Float!
+}
+
 input ConfirmEmailChangeInput {
   token: String!
+}
+
+input CreateClauseInput {
+  bodyText: String!
+  category: ClauseCategory
+  code: String
+  title: String!
+  variables: [ClauseVariableSyncInput!]
+}
+
+input CreateTagInput {
+  name: String!
 }
 
 input CreateUserInput {
@@ -75,6 +197,7 @@ input CreateVariableInput {
   description: String
   iconId: String!
   isArray: Boolean
+  key: String
   label: String!
   placeholder: String
   typeOptions: JSON
@@ -117,27 +240,37 @@ input LoginInput {
 }
 
 type Mutation {
+  assignTagToClause(input: AssignTagToClauseInput!): TagResponse!
+  changeClauseAvailability(availability: Availability!, id: String!): ClauseResponse!
   changePassword(input: ChangePasswordInput!): AuthMessageResponse!
+  changeTagAvailability(availability: Availability!, id: String!): TagResponse!
   changeUserAvailability(availability: Availability!, id: String!): UserResponse!
   changeVariableAvailability(availability: Availability!, id: String!): VariableResponse!
   changeVariableColorAvailability(availability: Availability!, id: String!): VariableColorResponse!
   changeVariableIconAvailability(availability: Availability!, id: String!): VariableIconResponse!
   confirmEmailChange(input: ConfirmEmailChangeInput!): UserResponse!
   confirmPasswordChange(input: ResetPasswordInput!): UserResponse!
+  createClause(input: CreateClauseInput!, replacesClauseId: String): ClauseResponse!
+  createTag(input: CreateTagInput!): TagResponse!
   createUser(input: CreateUserInput!): UserResponse!
   createVariable(input: CreateVariableInput!): VariableResponse!
   createVariableColor(input: CreateVariableColorInput!): VariableColorResponse!
   createVariableIcon(input: CreateVariableIconInput!): VariableIconResponse!
+  deleteClause(id: String!): ClauseResponse!
+  deleteTag(id: String!): TagResponse!
   deleteUser(id: String!): DeleteResponse!
   deleteVariable(id: String!): VariableResponse!
   deleteVariableColor(id: String!): VariableColorResponse!
   deleteVariableIcon(id: String!): VariableIconResponse!
   login(input: LoginInput!): AuthResponse!
   logout: AuthMessageResponse!
+  removeTagFromClause(input: RemoveTagFromClauseInput!): TagResponse!
   requestEmailChange(input: RequestEmailChangeInput!): AuthMessageResponse!
   requestPasswordChange(email: String!): AuthMessageResponse!
   resendEmailChange: AuthMessageResponse!
   seedAdmin(input: SeedAdminInput!): UserResponse!
+  updateClause(id: String!, input: UpdateClauseInput!): ClauseResponse!
+  updateTag(id: String!, input: UpdateTagInput!): TagResponse!
   updateUser(id: String!, input: UpdateUserInput!): UserResponse!
   updateVariable(id: String!, input: UpdateVariableInput!): VariableResponse!
   updateVariableColor(id: String!, input: UpdateVariableColorInput!): VariableColorResponse!
@@ -168,9 +301,14 @@ enum PartyRole {
 }
 
 type Query {
+  clause(id: String!): ClauseResponse!
+  clauses(filter: ClauseFilterInput, pagination: PaginationInput, sort: ClauseSortInput): ClausesPaginatedResponse!
   health: HealthResponse!
   me: AuthResponse!
   sessions(userId: String): [AuthToken!]!
+  tag(id: String!): TagResponse!
+  tags(filter: TagFilterInput, pagination: PaginationInput, sort: TagSortInput): TagsPaginatedResponse!
+  tagsByClause(clauseId: String!): TagsByClauseResponse!
   user(id: String!): UserResponse!
   users(filter: UserFilterInput, pagination: PaginationInput, sort: UserSortInput): UsersPaginatedResponse!
   variable(id: String!): VariableResponse!
@@ -179,6 +317,11 @@ type Query {
   variableIcon(id: String!): VariableIconResponse!
   variableIcons(filter: VariableIconFilterInput, pagination: PaginationInput, sort: VariableIconSortInput): VariableIconsPaginatedResponse!
   variables(filter: VariableFilterInput, pagination: PaginationInput, sort: VariableSortInput): VariablesPaginatedResponse!
+}
+
+input RemoveTagFromClauseInput {
+  clauseId: String!
+  tagId: String!
 }
 
 input RequestEmailChangeInput {
@@ -230,12 +373,74 @@ enum SortDirection {
   DESC
 }
 
+type Tag {
+  availability: Availability!
+  clauseTags: [ClauseTag!]!
+  createdAt: DateTime!
+  id: ID!
+  identifier: String!
+  isDeletable: Boolean!
+  name: String!
+  slug: String!
+  updatedAt: DateTime!
+}
+
+input TagFilterInput {
+  availability: [Availability!]
+  createdAtFrom: String
+  createdAtTo: String
+  searchTerm: String
+}
+
+type TagResponse {
+  code: ResponseCode!
+  data: Tag
+  message: String!
+  status: Float!
+}
+
+input TagSortInput {
+  createdAt: String
+  name: String
+}
+
+type TagsByClauseResponse {
+  code: ResponseCode!
+  data: [Tag!]!
+  message: String!
+  status: Float!
+}
+
+type TagsPaginatedData {
+  items: [Tag!]!
+  meta: PaginatedMeta!
+}
+
+type TagsPaginatedResponse {
+  code: ResponseCode!
+  data: TagsPaginatedData!
+  message: String!
+  status: Float!
+}
+
 enum TokenType {
   EMAIL_CHANGE
   EMAIL_VERIFICATION
   PASSWORD_CHANGE
   PASSWORD_RESET
   SESSION
+}
+
+input UpdateClauseInput {
+  bodyText: String
+  category: ClauseCategory
+  code: String
+  title: String
+  variables: [ClauseVariableSyncInput!]
+}
+
+input UpdateTagInput {
+  name: String
 }
 
 input UpdateUserInput {
@@ -264,6 +469,7 @@ input UpdateVariableInput {
   description: String
   iconId: String
   isArray: Boolean
+  key: String
   label: String
   placeholder: String
   typeOptions: JSON
@@ -277,6 +483,7 @@ type User {
   emailVerified: Boolean!
   id: ID!
   identifier: String!
+  isDeletable: Boolean!
   lastSession: AuthToken
   lastname: String
   name: String!
@@ -343,6 +550,7 @@ type Variable {
   id: ID!
   identifier: String!
   isArray: Boolean!
+  isDeletable: Boolean!
   key: String!
   label: String!
   placeholder: String
@@ -357,6 +565,7 @@ type VariableColor {
   hex: String!
   id: ID!
   identifier: String!
+  isDeletable: Boolean!
   name: String!
   updatedAt: DateTime!
 }
@@ -432,6 +641,7 @@ type VariableIcon {
   iconKey: String!
   id: ID!
   identifier: String!
+  isDeletable: Boolean!
   library: String!
   name: String!
   updatedAt: DateTime!

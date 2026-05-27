@@ -1,7 +1,9 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 
 import { ResponseBuilder } from '@/common/response';
+import { DeletableEntityType } from '@/common/deletability/entities';
+import { DeletabilityService } from '@/common/deletability/deletability.service';
 import { Availability } from '@/common/availability/entities';
 import { PaginationInput } from '@/common/pagination/dto';
 import { GqlAuthGuard, RolesGuard } from '@/auth/guards';
@@ -18,10 +20,19 @@ import {
   VariableFilterInput,
   VariableSortInput,
 } from '@/variables/dto';
+import { Variable } from '@/variables/entities';
 
-@Resolver()
+@Resolver(() => Variable)
 export class VariablesResolver {
-  constructor(private readonly variablesService: VariablesService) {}
+  constructor(
+    private readonly variablesService: VariablesService,
+    private readonly deletabilityService: DeletabilityService,
+  ) {}
+
+  @ResolveField(() => Boolean)
+  async isDeletable(@Parent() variable: Variable): Promise<boolean> {
+    return this.deletabilityService.isDeletable(DeletableEntityType.VARIABLE, variable.id);
+  }
 
   @Query(() => VariablesPaginatedResponse)
   @UseGuards(GqlAuthGuard)

@@ -10,6 +10,8 @@ import { User, UserRole } from '@/users/entities';
 import { AuthToken } from '@/auth/entities';
 import { Availability } from '@/common/availability/entities';
 import { ResponseBuilder } from '@/common/response';
+import { DeletableEntityType } from '@/common/deletability/entities';
+import { DeletabilityService } from '@/common/deletability/deletability.service';
 
 import {
   CreateUserInput,
@@ -27,7 +29,13 @@ export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly authTokenService: AuthTokenService,
+    private readonly deletabilityService: DeletabilityService,
   ) {}
+
+  @ResolveField(() => Boolean)
+  async isDeletable(@Parent() user: User): Promise<boolean> {
+    return this.deletabilityService.isDeletable(DeletableEntityType.USER, user.id);
+  }
 
   @ResolveField(() => AuthToken, { nullable: true })
   async lastSession(@Parent() user: User): Promise<AuthToken | null> {

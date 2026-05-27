@@ -26,6 +26,9 @@ export class VariableIcon {
   @Column({ type: 'varchar', length: 80, nullable: false, name: 'icon_key' })
   iconKey: string;
 
+  @Field(() => Boolean)
+  isDeletable: boolean;
+
   @Field(() => Availability)
   @Column({ type: 'enum', enum: Availability, default: Availability.ACTIVE, nullable: false })
   availability: Availability;

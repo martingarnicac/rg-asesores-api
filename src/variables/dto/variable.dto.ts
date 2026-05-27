@@ -11,6 +11,12 @@ import { Variable, VariableDataType, VariableDataFormat, VariableValueScope } fr
 
 @InputType()
 export class CreateVariableInput {
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  key?: string;
+
   @Field()
   @IsString()
   @Length(1, 255)
@@ -70,6 +76,12 @@ export class CreateVariableInput {
 
 @InputType()
 export class UpdateVariableInput {
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  key?: string;
+
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
