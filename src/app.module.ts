@@ -18,12 +18,14 @@ import { VariablesModule } from '@/variables/variables.module';
 import { ClausesModule } from '@/clauses/clauses.module';
 import { TagsModule } from '@/tags/tags.module';
 import { SignersModule } from '@/signers/signers.module';
+import corsConfig from '@/config/cors.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      load: [corsConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
