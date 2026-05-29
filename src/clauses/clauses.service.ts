@@ -24,6 +24,28 @@ import { Variable, VariableValueScope } from '@/variables/entities';
 import { Clause, ClauseVariable, ClauseCategory } from '@/clauses/entities';
 import { CreateClauseInput, UpdateClauseInput, ClauseVariableSyncInput } from '@/clauses/dto';
 
+/** Incluye color e icon del catálogo; sin ellos GraphQL falla en Variable.color / Variable.icon */
+const CLAUSE_DETAIL_RELATIONS = [
+  'creator',
+  'replacesClause',
+  'clauseVariables',
+  'clauseVariables.variable',
+  'clauseVariables.variable.color',
+  'clauseVariables.variable.icon',
+  'clauseTags',
+  'clauseTags.tag',
+] as const;
+
+const CLAUSE_LIST_RELATIONS = [
+  'creator',
+  'clauseVariables',
+  'clauseVariables.variable',
+  'clauseVariables.variable.color',
+  'clauseVariables.variable.icon',
+  'clauseTags',
+  'clauseTags.tag',
+] as const;
+
 @Injectable()
 export class ClausesService {
   constructor(
@@ -275,7 +297,7 @@ export class ClausesService {
     const result = await this.paginationService.paginateRepository(this.clauseRepo, pagination, {
       where,
       order,
-      relations: ['creator', 'clauseVariables', 'clauseVariables.variable', 'clauseTags', 'clauseTags.tag'],
+      relations: [...CLAUSE_LIST_RELATIONS],
     });
 
     return {
@@ -287,7 +309,7 @@ export class ClausesService {
   async findOne(id: string): Promise<Clause> {
     const clause = await this.clauseRepo.findOne({
       where: { id },
-      relations: ['creator', 'replacesClause', 'clauseVariables', 'clauseVariables.variable', 'clauseTags', 'clauseTags.tag'],
+      relations: [...CLAUSE_DETAIL_RELATIONS],
     });
     if (!clause) throw new NotFoundException('Clause not found');
     return clause;
@@ -324,7 +346,7 @@ export class ClausesService {
       // Devolver la cláusula completa con relaciones
       return manager.findOne(Clause, {
         where: { id: saved.id },
-        relations: ['creator', 'replacesClause', 'clauseVariables', 'clauseVariables.variable', 'clauseTags', 'clauseTags.tag'],
+        relations: [...CLAUSE_DETAIL_RELATIONS],
       }) as Promise<Clause>;
     });
   }
@@ -353,7 +375,7 @@ export class ClausesService {
 
       return manager.findOne(Clause, {
         where: { id },
-        relations: ['creator', 'replacesClause', 'clauseVariables', 'clauseVariables.variable', 'clauseTags', 'clauseTags.tag'],
+        relations: [...CLAUSE_DETAIL_RELATIONS],
       }) as Promise<Clause>;
     });
   }
